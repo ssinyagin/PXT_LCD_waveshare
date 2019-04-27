@@ -1,8 +1,13 @@
 # pxt-tft-lcd
-TFT LCD V2
+TFT LCD V3
 
 froked from http://www.obliquely.org.uk/connecting-a-microbit-and-adafruit-1-44-display/
 and http://www.obliquely.org.uk/bbc-microbit-lunar-lander-project-part-1/
+and https://github.com/daniel-pers/pxt-microbit-LCD-TFT-SPI-ST7735
+
+update :
+compatible with elecfreaks EF03407 joystick:bit.
+support not only st7735 but also ili9341
 
 # Usage
 
