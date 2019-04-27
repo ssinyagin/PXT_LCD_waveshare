@@ -13,36 +13,10 @@
  * see https://makecode.microbit.org/blocks/custom
  */
 
-/**
- * TFT display commands
- * Only the commands actually used are included here. See the ST7735R
- * data sheet for the full set of commands.
- */
-enum TftCom {
-    NOOP = 0x00,
-    SWRESET = 0x01,
-    SLPOUT = 0x11,
-    NORON = 0x13,
-    INVOFF = 0x20,
-    DISPON = 0x29,
-    CASET = 0x2A,
-    RASET = 0x2B,
-    RAMWR = 0x2C,
-    MADCTL = 0x36,
-    COLMOD = 0x3A,
-    FRMCTR1 = 0xB1,
-    FRMCTR2 = 0xB2,
-    FRMCTR3 = 0xB3,
-    INVCTR = 0xB4,
-    PWCTR1 = 0xC0,
-    PWCTR2 = 0xC1,
-    PWCTR3 = 0xC2,
-    PWCTR4 = 0xC3,
-    PWCTR5 = 0xC4,
-    VMCTR1 = 0xC5,
-    GMCTRP1 = 0xE0,
-    GMCTRN1 = 0xE1,
-    DELAY = 0xFFFF
+enum DISPLAY_CONTROLLER {
+
+    ST7735 = 0,
+    ILI9341 = 1
 }
 
 enum COLOR {
@@ -86,13 +60,54 @@ enum COLOR {
     Pink = 0xF81F
 };
 
-/**
- * TFT LCD SPI
- */
-//% weight=20 color=#0000ff icon="\uf10b" block="TFT LCD SPI"
+//% weight=20 color=#000fff icon="\uf10b" block="LCD"
 namespace TFTDisplay {
+
+/**
+ * TFT display commands
+ * Only the commands actually used are included here. See the ST7735R
+ * data sheet for the full set of commands.
+ */
+	enum TftCom {
+        NOOP = 0x00,
+        SWRESET = 0x01,
+        SLPOUT = 0x11,
+        NORON = 0x13,
+        INVOFF = 0x20,
+        GMCRV = 0x26,
+        DISPON = 0x29,
+        CASET = 0x2A,
+        RASET = 0x2B,
+        RAMWR = 0x2C,
+        MADCTL = 0x36,
+        COLMOD = 0x3A,
+        FRMCTR1 = 0xB1,
+        FRMCTR2 = 0xB2,
+        FRMCTR3 = 0xB3,
+        INVCTR = 0xB4,
+        DFCTL = 0xB6,
+        PWCTR1 = 0xC0,
+        PWCTR2 = 0xC1,
+        PWCTR3 = 0xC2,
+        PWCTR4 = 0xC3,
+        PWCTR5 = 0xC4,
+        PWCTRA = 0xCB,
+        PWCTRB = 0xCF,
+        VMCTR1 = 0xC5,
+        VMCTR2 = 0xC7,
+        GMCTRP1 = 0xE0,
+        GMCTRN1 = 0xE1,
+        DTCTRA = 0xE8,
+        DTCTRB = 0xEA,
+        POSEQ = 0xED,
+        GAMFUN = 0xF2,
+        PMPRTO = 0xF7,
+        DELAY = 0xFFFF
+    }
+
     let screen_x = 0
     let screen_y = 0
+    let model = DISPLAY_CONTROLLER.ILI9341
 
     function displayScale(): number {
         return 1
@@ -141,25 +156,27 @@ namespace TFTDisplay {
     /**
      * Set the address window
      */
-    function setAddrWindow(x0: number, y0: number, x1: number, y1: number) : void {
+    function setAddrWindow(x0: number, y0: number, x1: number, y1: number): void {
 
         if (outOfBounds(x0, y0, x1, y1)) {
             return
         }
         // set the column
         //tftCom(TftCom.CASET, [0x00, x0 + 2, 0x00, x1 + 2]) // 2 is an adjust for thr AdaFruit 1.44 display
-        tftCom(TftCom.CASET, [0x00, x0, 0x00, x1])
+        tftCom(TftCom.CASET, [Math.floor(x0 / 256), x0, Math.floor(x1 / 256), x1])
+        //tftCom(TftCom.CASET, [0, x0, 0, x1])
         //tftCom(TftCom.CASET, [0x00, 0x00, 0x00, 0x7F])
-	    // set the row
+        // set the row
         //tftCom(TftCom.RASET, [0x00, y0 + 3, 0x00, y1 + 3]) // 3 is an adjust for thr AdaFruit 1.44 display
-        tftCom(TftCom.RASET, [0x00, y0, 0x00, y1])
+        tftCom(TftCom.RASET, [Math.floor(y0 / 256), y0, Math.floor(y1 / 256), y1])
+        //tftCom(TftCom.RASET, [0, y0, 0, y1])
         //tftCom(TftCom.RASET, [0x00, 0x00, 0x00, 0x9f])
-	}
+    }
 
     /**
      * Write a command to the TFT display
      */
-    function tftCom(command: TftCom, params: Array<number>) : void {
+    function tftCom(command: TftCom, params: Array<number>): void {
 
         // handle the pseudo ‘DELAY’ command - provides a delay in milliseconds
         if (command == TftCom.DELAY) {
@@ -172,30 +189,29 @@ namespace TFTDisplay {
         }
 
         // let the TFT know we’re sending a command (rather than data)
-        pins.digitalWritePin(DigitalPin.P1, 0) // command/data = command
+        pins.digitalWritePin(DigitalPin.P15, 0) // command/data = command
         // select the TFT controller
-        pins.digitalWritePin(DigitalPin.P16, 0) // select the TFT as SPI target
+        pins.digitalWritePin(DigitalPin.P10, 0) // select the TFT as SPI target
 
         pins.spiWrite(command)
 
         // let the TFT know we’re sending data bytes (rather than a command)
-        pins.digitalWritePin(DigitalPin.P1, 1) // command/data = data
+        pins.digitalWritePin(DigitalPin.P15, 1) // command/data = data
 
         for (let dataItem of params) {
             pins.spiWrite(dataItem)
         }
 
         // de-select the TFT controller
-        pins.digitalWritePin(DigitalPin.P16, 1) // de-elect the TFT as SPI target
-
-        // restore pin to zero (for tidiness - not required)
-        pins.digitalWritePin(DigitalPin.P1, 0) // command/data = command
+        pins.digitalWritePin(DigitalPin.P10, 1) // de-elect the TFT as SPI target
     }
 
     /**
      * Do initial set up for display. (Required before any drawing begins.)
      */
-    function tftSetup() : void {
+
+
+    function tftSetup_ST7735(): void {
 
         // General Setup (for various display types)
 
@@ -254,11 +270,87 @@ namespace TFTDisplay {
 
         //2: Gamma Correction
         tftCom(TftCom.GMCTRN1, [0x0F, 0x1B, 0x0F, 0x17, 0x33, 0x2C, 0x29, 0x2E, 0x30, 0x30, 0x39, 0x3F, 0x00, 0x07, 0x03, 0x10])
-		
+
         // 3: set color mode, 16-bit colour
         tftCom(TftCom.COLMOD, [0x05])
 
         // 4: Main screen turn on
+        tftCom(TftCom.DISPON, [])
+    }
+
+
+    function tftSetup_ILI9341(): void {
+
+        // General Setup (for various display types)
+        tftCom(TftCom.SWRESET, [1])
+        tftCom(TftCom.DELAY, [1])
+        tftCom(TftCom.SWRESET, [0])
+        tftCom(TftCom.DELAY, [1])
+        tftCom(TftCom.SWRESET, [1])
+        tftCom(TftCom.DELAY, [120]) // we need ot wait at least 120ms
+
+        //power control A
+        tftCom(TftCom.PWCTRA, [0x39, 0x2C, 0x00, 0x34, 0x02])
+
+        //power control B
+        tftCom(TftCom.PWCTRB, [0x00, 0xC1, 0x30])
+
+        //driver timing control A
+        tftCom(TftCom.DTCTRA, [0x85, 0x00, 0x78])
+
+        //driver timing control B
+        tftCom(TftCom.DTCTRB, [0x00, 0x00])
+
+        //power on sequence control
+        tftCom(TftCom.POSEQ, [0x64, 0x03, 0x12, 0x81])
+
+        //pump ratio control
+        tftCom(TftCom.PMPRTO, [0x20])
+
+        //power control,VRH[5:0]
+        tftCom(TftCom.PWCTR1, [0x23])
+
+        //Power control,SAP[2:0];BT[3:0]
+        tftCom(TftCom.PWCTR2, [0x10])
+
+        //vcm control
+        tftCom(TftCom.VMCTR1, [0x3E, 0x28])
+
+        //vcm control 2
+        tftCom(TftCom.VMCTR2, [0x86])
+
+        //memory access control
+        tftCom(TftCom.MADCTL, [0x48])
+
+        //pixel format
+        tftCom(TftCom.COLMOD, [0x55])
+
+        //frameration control,normal mode full colours
+        tftCom(TftCom.FRMCTR1, [0x00, 0x18])
+
+        //display function control
+        tftCom(TftCom.DFCTL, [0x08, 0x82, 0x27])
+
+        //3gamma function disable
+        tftCom(TftCom.GAMFUN, [0x00])
+
+        //gamma curve selected
+        tftCom(TftCom.GMCRV, [0x01])
+
+        //1: Gamma Correction
+
+        //2: Gamma Correction
+        //set positive gamma correction
+        tftCom(TftCom.GMCTRP1, [0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, 0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00])
+
+        //set negative gamma correction
+        tftCom(TftCom.GMCTRN1, [0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F])
+
+        //exit sleep
+        tftCom(TftCom.SLPOUT, [])
+        tftCom(TftCom.DELAY, [120]) // we need ot wait at least 120ms
+
+        //display on
         tftCom(TftCom.DISPON, [])
     }
 
@@ -267,7 +359,7 @@ namespace TFTDisplay {
      */
     //% blockId="TFT_drawLine" block="drawLine on x0:%x0|y0:%y0|x1:%x1|y1:%y1|colour:%colour"
     //% weight=97
-    export function drawLine(x0: number, y0: number, x1: number, y1: number, colour: number) : void {
+    export function drawLine(x0: number, y0: number, x1: number, y1: number, colour: number): void {
         let xDelta = x1 - x0
         let yDelta = y1 - y0
 
@@ -304,7 +396,7 @@ namespace TFTDisplay {
      */
     //% blockId="TFT_drawPixel" block="drawPixel on x:%x|y:%y|colour:%colour"
     //% weight=98
-    export function drawPixel(x: number, y: number, colour: number) : void {
+    export function drawPixel(x: number, y: number, colour: number): void {
         if (outOfBounds(x, y)) {
             return
         }
@@ -319,7 +411,7 @@ namespace TFTDisplay {
      */
     //% blockId="TFT_fillRect" block="fillRect on x:%x|y:%y|width:%width|height:%height|colour:%colour"
     //% weight=96
-    export function fillRect(x: number, y: number, width: number, height: number, colour: number) : void {
+    export function fillRect(x: number, y: number, width: number, height: number, colour: number): void {
 
         if (outOfBounds(x, y)) {
             return;
@@ -341,10 +433,10 @@ namespace TFTDisplay {
         // we are going to manually implement the RAMWR command here because
         // we have custom parameters. See comments in tftCom for details
         // of what’s going on here.
-        pins.digitalWritePin(DigitalPin.P1, 0); // command/data = command
-        pins.digitalWritePin(DigitalPin.P16, 0); // select the TFT as SPI target
+        pins.digitalWritePin(DigitalPin.P15, 0); // command/data = command
+        pins.digitalWritePin(DigitalPin.P10, 0); // select the TFT as SPI target
         pins.spiWrite(TftCom.RAMWR);
-        pins.digitalWritePin(DigitalPin.P1, 1); // command/data = data
+        pins.digitalWritePin(DigitalPin.P15, 1); // command/data = data
 
         for (let indexY = height; indexY > 0; indexY--) {
             for (let indexX = width; indexX > 0; indexX--) {
@@ -353,44 +445,43 @@ namespace TFTDisplay {
             }
         }
 
-        pins.digitalWritePin(DigitalPin.P16, 1) // de-elect the TFT as SPI target
-        pins.digitalWritePin(DigitalPin.P1, 0) // command/data = command
+        pins.digitalWritePin(DigitalPin.P10, 1) // de-elect the TFT as SPI target
+        pins.digitalWritePin(DigitalPin.P15, 0) // command/data = command
     }
 
     /**
      * Setup and clear screen ready for used
      */
-    //% blockId="TFT_setupScreen" block="setupScreen on x:%x|y:%y"
+    //% blockId="TFT_setupScreen" block="setupScreen on x:%x|y:%y, model:%_model"
     //% weight=99
-    export function setupScreen(x: number = 128, y: number = 160) : void {
+    export function setupScreen(x: number = 128, y: number = 160, _model: DISPLAY_CONTROLLER ): void {
         screen_x = x
         screen_y = y
-        pins.spiFrequency(4000000) // try a fast rate for serial bus
+        model = _model
 
-        tftSetup()
+        pins.digitalWritePin(DigitalPin.P16, 1)
+        pins.spiPins(DigitalPin.P14, DigitalPin.P8, DigitalPin.P13)
+        pins.spiFrequency( 4000000 ) // try a fast rate for serial bus
 
-        fillRect(
-            0,
-            0,
-            x,
-            y,
-            0
-        )
-    }         
+        if( model == DISPLAY_CONTROLLER.ILI9341 )
+            tftSetup_ILI9341()
+        else if( model == DISPLAY_CONTROLLER.ST7735 )
+            tftSetup_ST7735()
+    }
 
     /**
     * Clear screen
     */
     //% blockId="TFT_clearScreen" block="clearScreen"
     //% weight=95
-    export function clearScreen() : void {
+    export function clearScreen(): void {
         fillRect(
             0,
             0,
             screen_x,
             screen_y,
             0
-		)
+        )
     }
 
     /**
@@ -400,7 +491,7 @@ namespace TFTDisplay {
     //% blockGap=8
     //% block="%color"
     //% weight=94
-    export function Get_Color(color: COLOR): number{
+    export function Get_Color(color: COLOR): number {
         return color;
     }
 }
