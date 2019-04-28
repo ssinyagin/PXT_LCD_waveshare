@@ -63,12 +63,12 @@ enum COLOR {
 //% weight=20 color=#000fff icon="\uf10b" block="LCD"
 namespace TFTDisplay {
 
-/**
- * TFT display commands
- * Only the commands actually used are included here. See the ST7735R
- * data sheet for the full set of commands.
- */
-	enum TftCom {
+    /**
+     * TFT display commands
+     * Only the commands actually used are included here. See the ST7735R
+     * data sheet for the full set of commands.
+     */
+    enum TftCom {
         NOOP = 0x00,
         SWRESET = 0x01,
         SLPOUT = 0x11,
@@ -105,9 +105,12 @@ namespace TFTDisplay {
         DELAY = 0xFFFF
     }
 
-    let screen_x = 0
-    let screen_y = 0
+    let screen_x = 128
+    let screen_y = 160
     let model = DISPLAY_CONTROLLER.ILI9341
+    let DC = DigitalPin.P15
+    let CS = DigitalPin.P10
+    let RS = DigitalPin.P16
 
     function displayScale(): number {
         return 1
@@ -163,14 +166,10 @@ namespace TFTDisplay {
         }
         // set the column
         //tftCom(TftCom.CASET, [0x00, x0 + 2, 0x00, x1 + 2]) // 2 is an adjust for thr AdaFruit 1.44 display
-        tftCom(TftCom.CASET, [Math.floor(x0 / 256), x0, Math.floor(x1 / 256), x1])
-        //tftCom(TftCom.CASET, [0, x0, 0, x1])
-        //tftCom(TftCom.CASET, [0x00, 0x00, 0x00, 0x7F])
+        tftCom(TftCom.CASET, [x0 >> 8, x0, x1 >> 8, x1])
         // set the row
         //tftCom(TftCom.RASET, [0x00, y0 + 3, 0x00, y1 + 3]) // 3 is an adjust for thr AdaFruit 1.44 display
-        tftCom(TftCom.RASET, [Math.floor(y0 / 256), y0, Math.floor(y1 / 256), y1])
-        //tftCom(TftCom.RASET, [0, y0, 0, y1])
-        //tftCom(TftCom.RASET, [0x00, 0x00, 0x00, 0x9f])
+        tftCom(TftCom.RASET, [y0 >> 8, y0, y1 >> 8, y1])
     }
 
     /**
@@ -189,28 +188,26 @@ namespace TFTDisplay {
         }
 
         // let the TFT know we’re sending a command (rather than data)
-        pins.digitalWritePin(DigitalPin.P15, 0) // command/data = command
+        pins.digitalWritePin(DC, 0) // command/data = command
         // select the TFT controller
-        pins.digitalWritePin(DigitalPin.P10, 0) // select the TFT as SPI target
+        pins.digitalWritePin(CS, 0) // select the TFT as SPI target
 
         pins.spiWrite(command)
 
         // let the TFT know we’re sending data bytes (rather than a command)
-        pins.digitalWritePin(DigitalPin.P15, 1) // command/data = data
+        pins.digitalWritePin(DC, 1) // command/data = data
 
         for (let dataItem of params) {
             pins.spiWrite(dataItem)
         }
 
         // de-select the TFT controller
-        pins.digitalWritePin(DigitalPin.P10, 1) // de-elect the TFT as SPI target
+        pins.digitalWritePin(CS, 1) // de-elect the TFT as SPI target
     }
 
     /**
      * Do initial set up for display. (Required before any drawing begins.)
      */
-
-
     function tftSetup_ST7735(): void {
 
         // General Setup (for various display types)
@@ -279,6 +276,9 @@ namespace TFTDisplay {
     }
 
 
+    /**
+     * Do initial set up for display. (Required before any drawing begins.)
+     */
     function tftSetup_ILI9341(): void {
 
         // General Setup (for various display types)
@@ -433,10 +433,10 @@ namespace TFTDisplay {
         // we are going to manually implement the RAMWR command here because
         // we have custom parameters. See comments in tftCom for details
         // of what’s going on here.
-        pins.digitalWritePin(DigitalPin.P15, 0); // command/data = command
-        pins.digitalWritePin(DigitalPin.P10, 0); // select the TFT as SPI target
+        pins.digitalWritePin(DC, 0); // command/data = command
+        pins.digitalWritePin(CS, 0); // select the TFT as SPI target
         pins.spiWrite(TftCom.RAMWR);
-        pins.digitalWritePin(DigitalPin.P15, 1); // command/data = data
+        pins.digitalWritePin(DC, 1); // command/data = data
 
         for (let indexY = height; indexY > 0; indexY--) {
             for (let indexX = width; indexX > 0; indexX--) {
@@ -445,27 +445,78 @@ namespace TFTDisplay {
             }
         }
 
-        pins.digitalWritePin(DigitalPin.P10, 1) // de-elect the TFT as SPI target
-        pins.digitalWritePin(DigitalPin.P15, 0) // command/data = command
+        pins.digitalWritePin(CS, 1) // de-elect the TFT as SPI target
+        pins.digitalWritePin(DC, 0) // command/data = command
+    }
+
+    /**
+     * Fill a rectangle with a given colour
+     */
+    //% blockId="TFT_randomFillRect" block="fillRect on x:%x|y:%y|width:%width|height:%height| with random color"
+    //% weight=96
+    export function randomFillRect(x: number, y: number, width: number, height: number): void {
+
+        if (outOfBounds(x, y)) {
+            return;
+        }
+
+        if ((x + width) > screen_x) {
+            width = screen_x - x;
+        }
+
+        if ((y + height) > screen_y) {
+            height = screen_y - y;
+        }
+
+        setAddrWindow(x, y, x + width - 1, y + height - 1);
+
+        // we are going to manually implement the RAMWR command here because
+        // we have custom parameters. See comments in tftCom for details
+        // of what’s going on here.
+        pins.digitalWritePin(DC, 0); // command/data = command
+        pins.digitalWritePin(CS, 0); // select the TFT as SPI target
+        pins.spiWrite(TftCom.RAMWR);
+        pins.digitalWritePin(DC, 1); // command/data = data
+
+        for (let indexY = height; indexY > 0; indexY--) {
+            for (let indexX = width; indexX > 0; indexX--) {
+                pins.spiWrite(Math.randomRange(0, 255))
+                pins.spiWrite(Math.randomRange(0, 255))
+            }
+        }
+
+        pins.digitalWritePin(CS, 1) // de-elect the TFT as SPI target
+        pins.digitalWritePin(DC, 0) // command/data = command
     }
 
     /**
      * Setup and clear screen ready for used
      */
-    //% blockId="TFT_setupScreen" block="setupScreen on x:%x|y:%y, model:%_model"
+    //% blockId="TFT_setupScreen" block="setupScreen width:%x height:%y model:%_model MOSI:%MOSI SCK:%SCK CS:%CS DC:%DC RS:%RESET"
+    //% x.defl=128
+    //% y.defl=160
+    //% _model.defl=DISPLAY_CONTROLLER.ST7735
+    //% MOSI.defl=DigitalPin.P14
+    //% SCK.defl=DigitalPin.P13
+    //% CS.defl=DigitalPin.P10
+    //% DC.defl=DigitalPin.P15
+    //% RESET.defl=DigitalPin.P16
     //% weight=99
-    export function setupScreen(x: number = 128, y: number = 160, _model: DISPLAY_CONTROLLER ): void {
+    export function setupScreen(x: number = 128, y: number = 160, _model: DISPLAY_CONTROLLER, MOSI: DigitalPin = DigitalPin.P14, SCK: DigitalPin = DigitalPin.P13, _CS: DigitalPin = DigitalPin.P10, _DC: DigitalPin = DigitalPin.P15, _RESET: DigitalPin = DigitalPin.P16): void {
         screen_x = x
         screen_y = y
         model = _model
+        CS = _CS
+        DC = _DC
+        RS = _RESET
 
-        pins.digitalWritePin(DigitalPin.P16, 1)
-        pins.spiPins(DigitalPin.P14, DigitalPin.P8, DigitalPin.P13)
-        pins.spiFrequency( 4000000 ) // try a fast rate for serial bus
+        pins.digitalWritePin(RS, 1)
+        pins.spiPins(MOSI, DigitalPin.P8, SCK)
+        pins.spiFrequency(4000000) // try a fast rate for serial bus
 
-        if( model == DISPLAY_CONTROLLER.ILI9341 )
+        if (model == DISPLAY_CONTROLLER.ILI9341)
             tftSetup_ILI9341()
-        else if( model == DISPLAY_CONTROLLER.ST7735 )
+        else if (model == DISPLAY_CONTROLLER.ST7735)
             tftSetup_ST7735()
     }
 
