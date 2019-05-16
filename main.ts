@@ -1,4 +1,4 @@
-
+﻿
 /**
  * Custom functions and blocks for interfacing with TFT display
  * and most code is from http://www.obliquely.org.uk/connecting-a-microbit-and-adafruit-1-44-display/
@@ -69,11 +69,11 @@ namespace TFTDisplay {
      * data sheet for the full set of commands.
      */
     enum TftCom {
-        NOOP = 0x00,
+        //        NOOP = 0x00,
         SWRESET = 0x01,
         SLPOUT = 0x11,
-        NORON = 0x13,
-        INVOFF = 0x20,
+        //        NORON = 0x13,
+        //        INVOFF = 0x20,
         GMCRV = 0x26,
         DISPON = 0x29,
         CASET = 0x2A,
@@ -107,7 +107,7 @@ namespace TFTDisplay {
 
     let screen_x = 128
     let screen_y = 160
-    let model = DISPLAY_CONTROLLER.ILI9341
+    let model = DISPLAY_CONTROLLER.ST7735
     let DC = DigitalPin.P15
     let CS = DigitalPin.P10
     let RS = DigitalPin.P16
@@ -498,9 +498,9 @@ namespace TFTDisplay {
     //% _model.defl=DISPLAY_CONTROLLER.ST7735
     //% MOSI.defl=DigitalPin.P14
     //% SCK.defl=DigitalPin.P13
-    //% CS.defl=DigitalPin.P10
-    //% DC.defl=DigitalPin.P15
-    //% RESET.defl=DigitalPin.P16
+    //% _CS.defl=DigitalPin.P10
+    //% _DC.defl=DigitalPin.P15
+    //% _RESET.defl=DigitalPin.P16
     //% weight=99
     export function setupScreen(x: number = 128, y: number = 160, _model: DISPLAY_CONTROLLER, MOSI: DigitalPin = DigitalPin.P14, SCK: DigitalPin = DigitalPin.P13, _CS: DigitalPin = DigitalPin.P10, _DC: DigitalPin = DigitalPin.P15, _RESET: DigitalPin = DigitalPin.P16): void {
         screen_x = x
