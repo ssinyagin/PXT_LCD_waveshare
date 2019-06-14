@@ -709,7 +709,7 @@ namespace TFTDisplay {
 
         scroll_top = top
         scroll_area = bottom - top
-        bottom = 162 - top - scroll_area
+        bottom = 160 - top - scroll_area
         tftCom(TftCom.SCLDEF, [top >> 8, top, scroll_area >> 8, bottom, bottom >> 8, bottom])
     }
     /**
