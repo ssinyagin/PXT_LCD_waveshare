@@ -1,6 +1,6 @@
 {
     "name": "TFTDisplay",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "ST7735/ILI9341 TFT SPI Driver",
     "license": "MIT",
     "dependencies": {
