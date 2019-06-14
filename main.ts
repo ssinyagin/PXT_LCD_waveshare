@@ -1,4 +1,3 @@
-
 /**
  * Custom functions and blocks for interfacing with TFT display
  * and most code is from http://www.obliquely.org.uk/connecting-a-microbit-and-adafruit-1-44-display/
@@ -410,7 +409,6 @@ namespace TFTDisplay {
         tftCom(TftCom.DISPON, [])
     }
 
-
     /**
      * Do initial set up for display. (Required before any drawing begins.)
      */
@@ -642,6 +640,8 @@ namespace TFTDisplay {
         let bgHiColour = (bgColor >> 8) % 256;
         let bgLoColour = bgColor % 256;
         let zoomFactor = 1
+        let index = 0
+        let colsel = 0
         if (zoom)
             zoomFactor = 2
 
@@ -660,7 +660,7 @@ namespace TFTDisplay {
                 for (let a = 0; a < zoomFactor; a++) {
                     for (let indexX = 0; indexX < 5; indexX++) {
                         index = indexY + indexX * 5
-                        let colsel = (p & (1 << index))
+                        colsel = (p & (1 << index))
                         for (let b = 0; b < zoomFactor; b++) {
 
                             if (colsel) {
@@ -709,6 +709,7 @@ namespace TFTDisplay {
         bottom = 160 - top - scroll_area
         tftCom(TftCom.SCLDEF, [top >> 8, top, scroll_area >> 8, bottom, bottom >> 8, bottom])
     }
+
     /**
      * Do Scroll
      * @param amount is scroll amount, eg: 1
