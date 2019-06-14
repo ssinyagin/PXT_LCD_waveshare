@@ -12,6 +12,8 @@ and https://github.com/daniel-pers/pxt-microbit-LCD-TFT-SPI-ST7735
 
 and https://www.displaytech-us.com/forum/ili9341-initialization-code
 
+font from microbit SSD1306 library.
+
 
 related parts :
 
