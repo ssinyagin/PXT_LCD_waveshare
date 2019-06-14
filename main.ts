@@ -634,7 +634,6 @@ namespace TFTDisplay {
      * @param bgColor is background color
      */
     //% blockId="TFT_string" block="show string at x %x|y %y|text %s|fontColor %fontColor|bgColor %bgColor|zoom %zoom"
-    //% weight=80 blockGap=8
     export function showString(x: number, y: number, s: string, fontColor: number, bgColor: number, zoom: boolean) {
 
         let p = 0
@@ -693,7 +692,6 @@ namespace TFTDisplay {
      * @param bgColor is background color
      */
     //% blockId="TFT_number" block="show a Number at x %x|y %y|number %num|fontColor %fontColor|bgColor %bgColor|zoom %zoom"
-    //% weight=80 blockGap=8
     export function showNumber(x: number, y: number, num: number, fontColor: number, bgColor: number, zoom: boolean) {
         showString(x, y, num.toString(), fontColor, bgColor, zoom)
     }
@@ -704,7 +702,6 @@ namespace TFTDisplay {
      * @param bottom is scroll bottom limit, eg: 127
      */
     //% blockId="TFT_scrollSet" block="Set Scroll Between top %top|bottom %bottom"
-    //% weight=80 blockGap=8
     export function setScroll(top: number, bottom: number) {
 
         scroll_top = top
@@ -717,7 +714,6 @@ namespace TFTDisplay {
      * @param amount is scroll amount, eg: 1
      */
     //% blockId="TFT_doScroll" block="Do Scroll for amount %amount pixels"
-    //% weight=80 blockGap=8
     export function doScroll(amount: number) {
 
         amount = (amount + scroll_top) % scroll_area
