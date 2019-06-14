@@ -209,7 +209,9 @@ namespace TFTDisplay {
         CASET = 0x2A,
         RASET = 0x2B,
         RAMWR = 0x2C,
+        SCLDEF = 0x33,
         MADCTL = 0x36,
+        SCLAMT = 0x37,
         COLMOD = 0x3A,
         FRMCTR1 = 0xB1,
         FRMCTR2 = 0xB2,
@@ -237,6 +239,8 @@ namespace TFTDisplay {
 
     let screen_x = 128
     let screen_y = 160
+    let scroll_top = 0
+    let scroll_area = 0
     let model = DISPLAY_CONTROLLER.ST7735
     let DC = DigitalPin.P15
     let CS = DigitalPin.P10
@@ -692,6 +696,32 @@ namespace TFTDisplay {
     //% weight=80 blockGap=8
     export function showNumber(x: number, y: number, num: number, fontColor: number, bgColor: number, zoom: boolean) {
         showString(x, y, num.toString(), fontColor, bgColor, zoom)
+    }
+
+    /**
+     * Set Scroll Area
+     * @param top is scroll upper limit, eg: 0
+     * @param bottom is scroll bottom limit, eg: 127
+     */
+    //% blockId="TFT_scrollSet" block="Set Scroll Between top %top|bottom %bottom"
+    //% weight=80 blockGap=8
+    export function setScroll(top: number, bottom: number) {
+
+        scroll_top = top
+        scroll_area = bottom - top
+        bottom = 162 - top - scroll_area
+        tftCom(TftCom.SCLDEF, [top >> 8, top, scroll_area >> 8, bottom, bottom >> 8, bottom])
+    }
+    /**
+     * Do Scroll
+     * @param amount is scroll amount, eg: 1
+     */
+    //% blockId="TFT_doScroll" block="Do Scroll for amount %amount pixels"
+    //% weight=80 blockGap=8
+    export function doScroll(amount: number) {
+
+        amount = (amount + scroll_top) % scroll_area
+        tftCom(TftCom.SCLAMT, [amount >> 8, amount])
     }
 
 
