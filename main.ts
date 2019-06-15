@@ -745,7 +745,7 @@ namespace TFTDisplay {
 
         pins.digitalWritePin(RS, 1)
         pins.spiPins(MOSI, DigitalPin.P8, SCK)
-        pins.spiFrequency(4000000) // try a fast rate for serial bus
+        pins.spiFrequency(2000000) // try a fast rate for serial bus
 
         if (model == DISPLAY_CONTROLLER.ILI9341)
             tftSetup_ILI9341()
