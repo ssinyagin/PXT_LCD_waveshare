@@ -649,7 +649,7 @@ namespace TFTDisplay {
 
             p = font[s.charCodeAt(n)]
 
-            setAddrWindow((x + n) * 5 * zoomFactor, y, (x + n) * 5 * zoomFactor + 5 * zoomFactor - 1, y + 5 * zoomFactor - 1);
+            setAddrWindow(x + n * 5 * zoomFactor, y, x + n * 5 * zoomFactor + 5 * zoomFactor - 1, y + 5 * zoomFactor - 1);
 
             pins.digitalWritePin(DC, 0); // command/data = command
             pins.digitalWritePin(CS, 0); // select the TFT as SPI target
