@@ -735,7 +735,7 @@ namespace TFTDisplay {
     //% _DC.defl=DigitalPin.P15
     //% _RESET.defl=DigitalPin.P16
     //% weight=99
-    export function setupScreen(x: number = 128, y: number = 160, _model: DISPLAY_CONTROLLER, MOSI: DigitalPin = DigitalPin.P14, SCK: DigitalPin = DigitalPin.P13, _CS: DigitalPin = DigitalPin.P10, _DC: DigitalPin = DigitalPin.P15, _RESET: DigitalPin = DigitalPin.P16): void {
+    export function setupScreen(): void {
         screen_x = 160
         screen_y = 128
         model = DISPLAY_CONTROLLER.ST7735
