@@ -736,15 +736,15 @@ namespace TFTDisplay {
     //% _RESET.defl=DigitalPin.P16
     //% weight=99
     export function setupScreen(x: number = 128, y: number = 160, _model: DISPLAY_CONTROLLER, MOSI: DigitalPin = DigitalPin.P14, SCK: DigitalPin = DigitalPin.P13, _CS: DigitalPin = DigitalPin.P10, _DC: DigitalPin = DigitalPin.P15, _RESET: DigitalPin = DigitalPin.P16): void {
-        screen_x = x
-        screen_y = y
-        model = _model
-        CS = _CS
-        DC = _DC
-        RS = _RESET
+        screen_x = 160
+        screen_y = 128
+        model = DISPLAY_CONTROLLER.ST7735
+        CS = DigitalPin.P16
+        DC = DigitalPin.P12
+        RS = DigitalPin.P8
 
         pins.digitalWritePin(RS, 1)
-        pins.spiPins(MOSI, DigitalPin.P8, SCK)
+        pins.spiPins(DigitalPin.P15, DigitalPin.P14, DigitalPin.P13)
         pins.spiFrequency(4000000) // try a fast rate for serial bus
 
         if (model == DISPLAY_CONTROLLER.ILI9341)
