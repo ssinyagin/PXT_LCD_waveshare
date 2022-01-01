@@ -725,15 +725,7 @@ namespace TFTDisplay {
     /**
      * Setup and clear screen ready for used
      */
-    //% blockId="TFT_setupScreen" block="setupScreen width:%x height:%y model:%_model MOSI:%MOSI SCK:%SCK CS:%CS DC:%DC RS:%RESET"
-    //% x.defl=128
-    //% y.defl=160
-    //% _model.defl=DISPLAY_CONTROLLER.ST7735
-    //% MOSI.defl=DigitalPin.P14
-    //% SCK.defl=DigitalPin.P13
-    //% _CS.defl=DigitalPin.P10
-    //% _DC.defl=DigitalPin.P15
-    //% _RESET.defl=DigitalPin.P16
+    //% blockId="TFT_setupScreen" block="setupScreen"
     //% weight=99
     export function setupScreen(): void {
         screen_x = 160
