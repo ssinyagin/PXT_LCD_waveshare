@@ -1,6 +1,6 @@
 {
-    "name": "TFTDisplay",
-    "version": "1.0.8",
+    "name": "TFTDisplay_Waveshare",
+    "version": "2.0.0",
     "description": "ST7735/ILI9341 TFT SPI Driver",
     "license": "MIT",
     "dependencies": {
